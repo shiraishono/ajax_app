@@ -1,19 +1,50 @@
 <h1>AjaxApp</h1>
-<%= form_with url:  "/posts", method: :post,id: "form" do |form| %>
-  <%= form.text_field :content %>
+<%= form_with url:  "/posts", method: :post, id: "form" do |form| %>
+  <%= form.text_field :content  , id: "content" %>
   <%= form.submit '投稿する' , id: "submit" %>
 <% end %>
 
 <div id="list">
+
+
+  <% @posts.each do |post| %>
+    <div class="post">
+      <div class="post-date">
+        投稿日時：<%= post.created_at %>
+      </div>
+      <div class="post-content">
+        <%= post.content %>
+      </div>
+    </div>
+  <% end %>
+
 </div>
 
-<% @posts.each do |post| %>
-<div class="post">
-  <div class="post-date">
-    投稿日時：<%= post.created_at %>
-  </div>
-  <div class="post-content">
-    <%= post.content %>
-  </div>
-</div>
-<% end %>
+<script>
+  // フォームの送信を処理する関数
+  function post() {
+    const form = document.getElementById("form");
+    form.addEventListener("submit", (e) => {
+      e.preventDefault(); // ページのリロードを防ぐ
+
+      const formData = new FormData(form);
+      const XHR = new XMLHttpRequest();
+      XHR.open("POST", "/posts", true);
+      XHR.responseType = "json";
+
+      // 送信データの設定
+      XHR.onload = () => {
+        if (XHR.status === 200) {
+          const list = document.getElementById("list");
+          const formText = document.getElementById("content");
+          list.insertAdjacentHTML("beforeend", buildHTML(XHR));
+          formText.value = "";
+        } else {
+          alert('エラーが発生しました');
+        }
+      };
+
+      // リクエストの送信
+      XHR.send(formData);
+    });
+  }
